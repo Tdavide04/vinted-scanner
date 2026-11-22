@@ -1,0 +1,59 @@
+{
+ "is_selection_highlighted": false,
+ "options": [
+  {
+   "id": "308275",
+   "title": "Capcom",
+   "type": "default"
+  },
+  {
+   "id": "73952",
+   "title": "C.P. Company",
+   "type": "default"
+  },
+  {
+   "id": "6882930",
+   "title": "adidas x C.P. Company",
+   "type": "default"
+  },
+  {
+   "id": "67",
+   "title": "Cop Copine",
+   "type": "default"
+  },
+  {
+   "id": "66000",
+   "title": "Camomilla",
+   "type": "default"
+  },
+  {
+   "id": "345705",
+   "title": "CASCO",
+   "type": "default"
+  },
+  {
+   "id": "536",
+   "title": "Camomilla Milano",
+   "type": "default"
+  },
+  {
+   "id": "787316",
+   "title": "Camomilla Italia",
+   "type": "default"
+  },
+  {
+   "id": "1361214",
+   "title": "Capodimonte",
+   "type": "default"
+  },
+  {
+   "id": "276693",
+   "title": "Caporal",
+   "type": "default"
+  }
+ ],
+ "selected_filters": {
+  "code": "brand",
+  "ids": []
+ }
+}

@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      # pch-marketplace-kit is a private repo: DEPS_TOKEN is a read-only token on it
+      - name: Git access to the private dependency repos
+        env:
+          DEPS_TOKEN: ${{ secrets.DEPS_TOKEN }}
+        run: |
+          if [ -z "$DEPS_TOKEN" ]; then echo "::error::secret DEPS_TOKEN is missing (read-only token on pch-marketplace-kit)"; exit 1; fi
+          git config --global url."https://x-access-token:${DEPS_TOKEN}@github.com/".insteadOf "https://github.com/"
+      - run: uv sync --locked
+      - run: uv run pytest

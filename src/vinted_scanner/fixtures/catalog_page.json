@@ -1,0 +1,220 @@
+{
+  "items": [
+    {
+      "id": 9000000001,
+      "title": "Figurine ada wong",
+      "url": "/items/9000000001-figurine-ada-wong",
+      "price": {
+        "amount": "32.00",
+        "currency_code": "EUR"
+      },
+      "service_fee": {
+        "amount": "2.30",
+        "currency_code": "EUR"
+      },
+      "total_item_price": {
+        "amount": "34.30",
+        "currency_code": "EUR"
+      },
+      "promoted": false,
+      "favourite_count": 2,
+      "view_count": 0,
+      "is_favourite": false,
+      "content_source": "search",
+      "user": {
+        "business": false,
+        "id": 101,
+        "login": "venditore_1"
+      },
+      "photo": {
+        "id": 1,
+        "image_no": 1,
+        "is_main": true,
+        "width": 600,
+        "height": 800,
+        "full_size_url": "https://images.example.test/vinted/1.webp",
+        "url": "https://images.example.test/vinted/1.webp"
+      },
+      "item_box": {
+        "accessibility_label": "Figurine ada wong, Brand: Resident Evil, Condizioni: Buone, Taglia: Prematuri, fino a 44 cm, 32.00 €, 34.30 €",
+        "first_line": "Resident Evil",
+        "second_line": "Prematuri, fino a 44 cm · Buone",
+        "item_id": 9000000001
+      }
+    },
+    {
+      "id": 9000000002,
+      "title": "Resident evil 6 - Xbox 360",
+      "url": "/items/9000000002-resident-evil-6-xbox-360",
+      "price": {
+        "amount": "5.00",
+        "currency_code": "EUR"
+      },
+      "service_fee": {
+        "amount": "0.95",
+        "currency_code": "EUR"
+      },
+      "total_item_price": {
+        "amount": "5.95",
+        "currency_code": "EUR"
+      },
+      "promoted": false,
+      "favourite_count": 0,
+      "view_count": 0,
+      "is_favourite": false,
+      "content_source": "search",
+      "user": {
+        "business": false,
+        "id": 102,
+        "login": "venditore_2"
+      },
+      "photo": {
+        "id": 2,
+        "image_no": 1,
+        "is_main": true,
+        "width": 600,
+        "height": 800,
+        "full_size_url": "https://images.example.test/vinted/2.webp",
+        "url": "https://images.example.test/vinted/2.webp"
+      },
+      "item_box": {
+        "accessibility_label": "Resident evil 6 - Xbox 360, Condizioni: Ottime, 5.00 €, 5.95 €",
+        "first_line": "Resident evil 6 - Xbox 360",
+        "second_line": "Ottime",
+        "item_id": 9000000002
+      }
+    },
+    {
+      "id": 9000000003,
+      "title": "resident evil biohazard",
+      "url": "/items/9000000003-resident-evil-biohazard",
+      "price": {
+        "amount": "25.00",
+        "currency_code": "EUR"
+      },
+      "service_fee": {
+        "amount": "1.95",
+        "currency_code": "EUR"
+      },
+      "total_item_price": {
+        "amount": "26.95",
+        "currency_code": "EUR"
+      },
+      "promoted": false,
+      "favourite_count": 0,
+      "view_count": 0,
+      "is_favourite": false,
+      "content_source": "search",
+      "user": {
+        "business": false,
+        "id": 103,
+        "login": "venditore_3"
+      },
+      "photo": {
+        "id": 3,
+        "image_no": 1,
+        "is_main": true,
+        "width": 600,
+        "height": 800,
+        "full_size_url": "https://images.example.test/vinted/3.webp",
+        "url": "https://images.example.test/vinted/3.webp"
+      },
+      "item_box": {
+        "accessibility_label": "resident evil biohazard, Condizioni: Ottime, 25.00 €, 26.95 €",
+        "first_line": "resident evil biohazard",
+        "second_line": "Ottime",
+        "item_id": 9000000003
+      }
+    },
+    {
+      "id": 9000000004,
+      "title": "Resident Evil 4 - Playstation 5 #P267",
+      "url": "/items/9000000004-resident-evil-4-playstation-5-p267",
+      "price": {
+        "amount": "22.00",
+        "currency_code": "EUR"
+      },
+      "service_fee": {
+        "amount": "1.80",
+        "currency_code": "EUR"
+      },
+      "total_item_price": {
+        "amount": "23.80",
+        "currency_code": "EUR"
+      },
+      "promoted": false,
+      "favourite_count": 0,
+      "view_count": 0,
+      "is_favourite": false,
+      "content_source": "search",
+      "user": {
+        "business": true,
+        "id": 104,
+        "login": "venditore_4"
+      },
+      "photo": {
+        "id": 4,
+        "image_no": 1,
+        "is_main": true,
+        "width": 600,
+        "height": 800,
+        "full_size_url": "https://images.example.test/vinted/4.webp",
+        "url": "https://images.example.test/vinted/4.webp"
+      },
+      "item_box": {
+        "accessibility_label": "Resident Evil 4 - Playstation 5 #P267, Condizioni: Ottime, 22.00 €, 23.80 €",
+        "first_line": "Resident Evil 4 - Playstation 5 #P267",
+        "second_line": "Ottime",
+        "item_id": 9000000004
+      }
+    },
+    {
+      "id": 9000000005,
+      "title": "Nintendo Switch 2",
+      "url": "/items/9000000005-nintendo-switch-2",
+      "price": {
+        "amount": "220.00",
+        "currency_code": "EUR"
+      },
+      "service_fee": {
+        "amount": "11.70",
+        "currency_code": "EUR"
+      },
+      "total_item_price": {
+        "amount": "231.70",
+        "currency_code": "EUR"
+      },
+      "promoted": false,
+      "favourite_count": 0,
+      "view_count": 0,
+      "is_favourite": false,
+      "content_source": "search",
+      "user": {
+        "business": false,
+        "id": 105,
+        "login": "venditore_5"
+      },
+      "photo": {
+        "id": 5,
+        "image_no": 1,
+        "is_main": true,
+        "width": 600,
+        "height": 800,
+        "full_size_url": "https://images.example.test/vinted/5.webp",
+        "url": "https://images.example.test/vinted/5.webp"
+      },
+      "item_box": {
+        "accessibility_label": "Nintendo Switch 2, Brand: Nintendo, Condizioni: Ottime, 220.00 €, 231.70 €",
+        "first_line": "Nintendo",
+        "second_line": "Ottime",
+        "item_id": 9000000005
+      }
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "per_page": 5,
+    "total_entries": 960,
+    "total_pages": 192
+  }
+}

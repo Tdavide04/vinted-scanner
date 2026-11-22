@@ -1,0 +1,342 @@
+{
+ "catalogs": [
+  {
+   "id": 1904,
+   "title": "Donna",
+   "catalogs": [
+    {
+     "id": 4,
+     "title": "Vestiti",
+     "catalogs": [
+      {
+       "id": 1037,
+       "title": "Abbigliamento da esterno"
+      },
+      {
+       "id": 13,
+       "title": "Maglioni e pullover"
+      },
+      {
+       "id": 8,
+       "title": "Completi e blazer"
+      },
+      {
+       "id": 10,
+       "title": "Abiti"
+      },
+      {
+       "id": 11,
+       "title": "Gonne"
+      },
+      {
+       "id": 5491,
+       "title": "Skort"
+      }
+     ]
+    },
+    {
+     "id": 16,
+     "title": "Scarpe",
+     "catalogs": [
+      {
+       "id": 2955,
+       "title": "Ballerine"
+      },
+      {
+       "id": 2954,
+       "title": "Scarpe da barca, loafer e mocassini"
+      },
+      {
+       "id": 1049,
+       "title": "Stivali"
+      },
+      {
+       "id": 2623,
+       "title": "Zoccoli e sabot"
+      },
+      {
+       "id": 2953,
+       "title": "Espadrillas"
+      },
+      {
+       "id": 2952,
+       "title": "Infradito e ciabatte"
+      }
+     ]
+    },
+    {
+     "id": 19,
+     "title": "Borse",
+     "catalogs": [
+      {
+       "id": 157,
+       "title": "Zaini"
+      },
+      {
+       "id": 2940,
+       "title": "Borse da spiaggia"
+      },
+      {
+       "id": 2941,
+       "title": "Valigette"
+      },
+      {
+       "id": 2942,
+       "title": "Borse a secchiello"
+      },
+      {
+       "id": 1848,
+       "title": "Marsupio"
+      },
+      {
+       "id": 159,
+       "title": "Pochette"
+      }
+     ]
+    },
+    {
+     "id": 1187,
+     "title": "Accessori",
+     "catalogs": [
+      {
+       "id": 2931,
+       "title": "Bandana e fazzoletti per la testa"
+      },
+      {
+       "id": 20,
+       "title": "Cinture"
+      },
+      {
+       "id": 90,
+       "title": "Guanti"
+      },
+      {
+       "id": 1123,
+       "title": "Accessori per capelli"
+      },
+      {
+       "id": 2932,
+       "title": "Fazzoletti"
+      },
+      {
+       "id": 88,
+       "title": "Cappelli e berretti"
+      }
+     ]
+    },
+    {
+     "id": 146,
+     "title": "Bellezza",
+     "catalogs": [
+      {
+       "id": 964,
+       "title": "Make-up"
+      },
+      {
+       "id": 152,
+       "title": "Profumi"
+      },
+      {
+       "id": 948,
+       "title": "Cura del viso"
+      },
+      {
+       "id": 1906,
+       "title": "Accessori di bellezza"
+      },
+      {
+       "id": 1264,
+       "title": "Cura delle mani"
+      },
+      {
+       "id": 960,
+       "title": "Cura delle unghie"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": 2994,
+   "title": "Elettronica",
+   "catalogs": [
+    {
+     "id": 3564,
+     "title": "Computer e accessori",
+     "catalogs": [
+      {
+       "id": 3580,
+       "title": "Computer portatili"
+      },
+      {
+       "id": 3581,
+       "title": "Computer desktop"
+      },
+      {
+       "id": 3582,
+       "title": "Parti e componenti del computer"
+      },
+      {
+       "id": 3583,
+       "title": "Supporti vuoti"
+      },
+      {
+       "id": 3584,
+       "title": "Accessori per computer"
+      },
+      {
+       "id": 3585,
+       "title": "Accessori per computer portatili"
+      }
+     ]
+    },
+    {
+     "id": 3565,
+     "title": "Telefoni cellulari e comunicazione",
+     "catalogs": [
+      {
+       "id": 3661,
+       "title": "Telefoni cellulari"
+      },
+      {
+       "id": 3662,
+       "title": "Parti e accessori per telefoni cellulari"
+      },
+      {
+       "id": 3663,
+       "title": "Telefoni fissi"
+      },
+      {
+       "id": 3664,
+       "title": "Fax"
+      },
+      {
+       "id": 3665,
+       "title": "Comunicazione radio"
+      },
+      {
+       "id": 3666,
+       "title": "Cellulari finti"
+      }
+     ]
+    },
+    {
+     "id": 3566,
+     "title": "Audio, cuffie e hi-fi",
+     "catalogs": [
+      {
+       "id": 3678,
+       "title": "Cuffie e auricolari"
+      },
+      {
+       "id": 3679,
+       "title": "Lettori musicali portatili"
+      },
+      {
+       "id": 3680,
+       "title": "Radio portatili"
+      },
+      {
+       "id": 3681,
+       "title": "Altoparlanti portatili"
+      },
+      {
+       "id": 3682,
+       "title": "Altoparlanti smart"
+      },
+      {
+       "id": 3683,
+       "title": "Sistemi audio per la casa"
+      }
+     ]
+    },
+    {
+     "id": 3054,
+     "title": "Fotocamere e accessori",
+     "catalogs": [
+      {
+       "id": 3060,
+       "title": "Fotocamere"
+      },
+      {
+       "id": 3061,
+       "title": "Obiettivi"
+      },
+      {
+       "id": 3062,
+       "title": "Flash"
+      },
+      {
+       "id": 3063,
+       "title": "Schede di memoria"
+      },
+      {
+       "id": 3067,
+       "title": "Treppiedi e monopiedi"
+      },
+      {
+       "id": 3065,
+       "title": "Stabilizzatori e supporti"
+      }
+     ]
+    },
+    {
+     "id": 3567,
+     "title": "Tablet, e-reader e accessori",
+     "catalogs": [
+      {
+       "id": 3728,
+       "title": "Tablet"
+      },
+      {
+       "id": 3729,
+       "title": "e-Reader"
+      },
+      {
+       "id": 3730,
+       "title": "Taccuini digitali"
+      },
+      {
+       "id": 3731,
+       "title": "Assistenti digitali personali"
+      },
+      {
+       "id": 3732,
+       "title": "Accessori"
+      }
+     ]
+    },
+    {
+     "id": 3002,
+     "title": "Videogiochi e console",
+     "catalogs": [
+      {
+       "id": 3025,
+       "title": "Console"
+      },
+      {
+       "id": 3026,
+       "title": "Giochi"
+      },
+      {
+       "id": 3570,
+       "title": "Controller"
+      },
+      {
+       "id": 3571,
+       "title": "Cuffie da gaming"
+      },
+      {
+       "id": 3575,
+       "title": "Simulatori"
+      },
+      {
+       "id": 3576,
+       "title": "Realtà virtuale"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
