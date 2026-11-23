@@ -1,17 +1,11 @@
-"""Vinted adapter: params validation, normalization of a real (anonymized) catalogue page, session and paging
+"""Vinted scanner: params validation, normalization of a real (anonymized) catalogue page, session and paging
 with a fake transport. No network."""
-import json
 from decimal import Decimal
-from pathlib import Path
 
 import pytest
-import requests
 
-from pch_marketplace_kit.adapter import InvalidParams, PermanentMarketplaceError
-from pch_marketplace_kit.http import HttpPolicy
-from vinted_scanner import VintedAdapter, normalize
-from vinted_scanner.testing import FAST, FakeVinted, load_fixture
-from pch_marketplace_kit.testing import FakeTime, response
+from vinted_scanner import InvalidQueryError, PermanentVintedError, VintedQuery, VintedScanner, normalize
+from vinted_scanner.testing import FAST, FakeTime, FakeVinted, load_fixture, response
 
 PAGE = load_fixture("catalog_page")
 
@@ -19,7 +13,7 @@ PAGE = load_fixture("catalog_page")
 # --- params -----------------------------------------------------------------------------------
 
 def test_params_defaults_and_normalisation():
-    params = VintedAdapter().validate_params({"search_text": " resident evil ", "filters": {"brand": [123, "456"]}})
+    params = VintedScanner().validate_params({"search_text": " resident evil ", "filters": {"brand": [123, "456"]}})
     assert params == {
         "domain": "vinted.it", "search_text": "resident evil", "order": "newest_first", "per_page": 24,
         "filters": {"brand": ["123", "456"]},
@@ -42,8 +36,8 @@ def test_params_defaults_and_normalisation():
     ],
 )
 def test_invalid_params_point_at_the_field(raw, loc):
-    with pytest.raises(InvalidParams) as exc:
-        VintedAdapter().validate_params(raw)
+    with pytest.raises(InvalidQueryError) as exc:
+        VintedScanner().validate_params(raw)
     assert loc in [error_loc for error_loc, _ in exc.value.errors]
 
 
@@ -81,14 +75,14 @@ def test_item_without_price_is_missing_not_zero():
 
 # --- session and paging with a fake transport -------------------------------------------------
 
-def adapter(fake: FakeVinted) -> VintedAdapter:
+def scanner(fake: FakeVinted) -> VintedScanner:
     time = FakeTime()
-    return VintedAdapter(policy=FAST, session=fake, clock=time.clock, sleep=time.sleep)
+    return VintedScanner(config=FAST, session=fake, clock=time.clock, sleep=time.sleep)
 
 
 def test_first_page_initialises_the_anonymous_session_and_sends_filters():
     fake = FakeVinted([response(200, PAGE)])
-    vinted = adapter(fake)
+    vinted = scanner(fake)
     params = vinted.validate_params({"search_text": "resident evil", "filters": {"brand": ["123"], "status": ["2", "3"]}})
 
     page = vinted.fetch_page(params, None)
@@ -101,13 +95,13 @@ def test_first_page_initialises_the_anonymous_session_and_sends_filters():
         "attribute_ids[brand]": "123", "attribute_ids[status]": "2,3",
     }
     assert catalogue["headers"]["X-Anon-Id"] == "anon-1" and catalogue["headers"]["Locale"] == "it-IT"
-    assert len(page.candidates) == 5 and page.next_cursor == 2 and page.newest_first is True
+    assert len(page.listings) == 5 and page.next_cursor == 2 and page.newest_first is True
 
 
 def test_last_page_has_no_next_cursor_and_relevance_is_not_newest_first():
     last = {**PAGE, "pagination": {**PAGE["pagination"], "current_page": 192, "total_pages": 192}}
     fake = FakeVinted([response(200, last)])
-    vinted = adapter(fake)
+    vinted = scanner(fake)
     page = vinted.fetch_page(vinted.validate_params({"search_text": "x", "order": "relevance"}), 192)
     assert (page.next_cursor, page.newest_first) == (None, False)
     assert fake.calls[-1]["params"]["page"] == 192
@@ -115,34 +109,60 @@ def test_last_page_has_no_next_cursor_and_relevance_is_not_newest_first():
 
 def test_expired_session_is_renewed_once():
     fake = FakeVinted([response(401, {"message": "unauthorized"}), response(200, PAGE)])
-    vinted = adapter(fake)
+    vinted = scanner(fake)
     page = vinted.fetch_page(vinted.validate_params({"search_text": "x"}), None)
-    assert len(page.candidates) == 5
+    assert len(page.listings) == 5
     assert [c["url"].split("/")[2] for c in fake.calls] == ["www.vinted.it", "api.vinted.it", "www.vinted.it", "api.vinted.it"]
     assert fake.calls[-1]["headers"]["X-Anon-Id"] == "anon-3"
 
 
 def test_repeated_401_is_permanent():
     fake = FakeVinted([response(401, {}), response(401, {})])
-    vinted = adapter(fake)
-    with pytest.raises(PermanentMarketplaceError):
+    vinted = scanner(fake)
+    with pytest.raises(PermanentVintedError):
         vinted.fetch_page(vinted.validate_params({"search_text": "x"}), None)
 
 
 def test_unexpected_schema_is_permanent():
     fake = FakeVinted([response(200, {"message": "blocked"})])
-    vinted = adapter(fake)
-    with pytest.raises(PermanentMarketplaceError, match="items"):
+    vinted = scanner(fake)
+    with pytest.raises(PermanentVintedError, match="items"):
         vinted.fetch_page(vinted.validate_params({"search_text": "x"}), None)
 
 
 def test_malformed_items_become_rejected():
     broken = {**PAGE, "items": [PAGE["items"][0], {"id": 1, "title": ""}, "nope"]}
     fake = FakeVinted([response(200, broken)])
-    vinted = adapter(fake)
+    vinted = scanner(fake)
     page = vinted.fetch_page(vinted.validate_params({"search_text": "x"}), None)
-    assert len(page.candidates) == 1 and len(page.rejected) == 2
+    assert len(page.listings) == 1 and len(page.rejected) == 2
 
 
 def test_capabilities_declare_what_the_catalogue_provides():
-    assert VintedAdapter.capabilities == frozenset({"images", "seller", "condition"})
+    assert VintedScanner.capabilities == frozenset({"images", "seller", "condition"})
+
+
+# --- typed query, pages and search ------------------------------------------------------------
+
+def test_query_round_trips_through_params():
+    query = VintedQuery(search_text="re", filters={"brand": ["1"]}, price_from="5.00")
+    assert query.to_params() == {"domain": "vinted.it", "search_text": "re", "order": "newest_first", "per_page": 24, "price_from": "5.00", "filters": {"brand": ["1"]}}
+    assert VintedQuery.from_params(query.to_params()) == query
+    with pytest.raises(InvalidQueryError):
+        VintedQuery()
+
+
+def test_pages_stop_at_max_pages_and_search_dedupes():
+    fake = FakeVinted([response(200, PAGE), response(200, PAGE)])
+    vinted = scanner(fake)
+    listings = vinted.search(VintedQuery(search_text="x"), max_pages=2)
+    assert len(listings) == 5  # the same items on both pages appear once
+    assert [c["params"]["page"] for c in fake.calls if c["url"].startswith("https://api.")] == [1, 2]
+    with pytest.raises(ValueError):
+        next(vinted.pages(VintedQuery(search_text="x"), max_pages=0))
+
+
+def test_pages_end_on_the_last_page():
+    last = {**PAGE, "pagination": {**PAGE["pagination"], "total_pages": 1}}
+    vinted = scanner(FakeVinted([response(200, last)]))
+    assert len(list(vinted.pages(VintedQuery(search_text="x"), max_pages=3))) == 1
