@@ -1,8 +1,7 @@
-"""Vinted filter discovery on the adapter, with a fake transport on real (trimmed) responses. No network."""
+"""Vinted filter discovery on the scanner, with a fake transport on real (trimmed) responses. No network."""
 import pytest
 
-from pch_marketplace_kit.testing import FakeTime
-from vinted_scanner.testing import DiscoveryVinted, adapter_with
+from vinted_scanner.testing import DiscoveryVinted, FakeTime, scanner_with
 
 
 @pytest.fixture
@@ -17,7 +16,7 @@ def fake():
 
 @pytest.fixture
 def vinted(fake, time):
-    return adapter_with(fake, time)
+    return scanner_with(fake, time)
 
 
 def paths(fake) -> list[str]:
@@ -63,7 +62,7 @@ def test_list_filter_options_use_facets_and_local_accent_insensitive_search(vint
 
 
 @pytest.mark.parametrize("domain", ["evil.example/x?vinted.it", "vinted.it.evil.example"])
-def test_adapter_refuses_to_build_urls_for_other_hosts(vinted, fake, domain):
+def test_scanner_refuses_to_build_urls_for_other_hosts(vinted, fake, domain):
     with pytest.raises(ValueError):
         vinted.search_catalogs(domain, "")
     assert fake.calls == []
