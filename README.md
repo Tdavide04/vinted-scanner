@@ -23,7 +23,7 @@ Query params: `domain` (default `vinted.it`), `search_text`, `order` (`newest_fi
 
 ## Licence
 
-GPL-3.0. The parameter handling is ported from a fork of VintedScanner, which is GPL-3.0 (PCH ADR-0002).
+GPL-3.0-only. The parameter handling is ported from a fork of VintedScanner, which is GPL-3.0-only (PCH ADR-0002).
 
 ## Development
 
