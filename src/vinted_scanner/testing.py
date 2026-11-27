@@ -79,16 +79,34 @@ def load_fixture(name: str) -> dict[str, Any]:
     return data
 
 
-class FakeVinted:
-    """requests-like session: the home page sets the anonymous cookie, the catalogue answers scripted pages."""
+def load_item_page() -> str:
+    """A real item page, trimmed to its pricing data: shipping 4.99 EUR (several options), buyer protection 1.35 EUR."""
+    return files("vinted_scanner").joinpath("fixtures", "item_page.html").read_text(encoding="utf-8")
 
-    def __init__(self, catalogue: list[Any]):
+
+def item_page_response(html: str | None = None) -> requests.Response:
+    """An item page response; `html` defaults to `load_item_page()`."""
+    body = load_item_page() if html is None else html
+    return response(200, raw=body.encode(), headers={"Content-Type": "text/html; charset=utf-8"}, url="https://www.vinted.it/items/9000000001")
+
+
+class FakeVinted:
+    """requests-like session: the home page sets the anonymous cookie, the catalogue answers scripted pages and
+    `item_pages` maps item ids to their page response (or exception); other item pages answer 404."""
+
+    def __init__(self, catalogue: list[Any], item_pages: dict[str, Any] | None = None):
         self.cookies = requests.cookies.RequestsCookieJar()
         self.catalogue = list(catalogue)
+        self.item_pages = dict(item_pages or {})
         self.calls: list[dict[str, Any]] = []
 
     def request(self, method: str, url: str, params: Any = None, headers: Any = None, timeout: Any = None) -> Any:
         self.calls.append({"url": url, "params": params, "headers": headers})
+        if url.startswith("https://www.") and "/items/" in url:
+            outcome = self.item_pages.get(url.rsplit("/", 1)[1], response(404, raw=b"<html></html>", headers={"Content-Type": "text/html"}))
+            if isinstance(outcome, Exception):
+                raise outcome
+            return outcome
         if url.startswith("https://www."):
             self.cookies.set("anon_id", f"anon-{len(self.calls)}")
             return response(200, raw=b"<html></html>", headers={"Content-Type": "text/html"})

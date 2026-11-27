@@ -1,6 +1,6 @@
 [project]
 name = "vinted-scanner"
-version = "0.2.0"
+version = "0.3.0"
 description = "Read-only search of the Vinted catalogue (anonymous session): Python library and command line tool"
 readme = "README.md"
 license = "GPL-3.0-only"

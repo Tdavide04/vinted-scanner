@@ -113,6 +113,30 @@ class VintedListing:
 
 
 @dataclass(frozen=True)
+class VintedItemPricing:
+    """Delivery and buyer-protection prices of one item, read from its page as Vinted shows them to a buyer with no
+    address. With several delivery options the amount is the one Vinted shows first: the checkout can differ."""
+
+    shipping_status: ShippingStatus
+    shipping_amount: Decimal | None = None
+    fees_amount: Decimal | None = None  # buyer protection
+    currency: str | None = None
+    multiple_shipping_options: bool = False
+
+    def __post_init__(self) -> None:
+        if self.shipping_status not in SHIPPING_STATUSES:
+            raise ValueError(f"unknown shipping status {self.shipping_status!r}")
+        if (self.shipping_status == "known") != (self.shipping_amount is not None):
+            raise ValueError("a shipping amount is required exactly when shipping is 'known'")
+        for name in ("shipping_amount", "fees_amount"):
+            value = getattr(self, name)
+            if value is not None and (not isinstance(value, Decimal) or not value.is_finite() or value < 0 or value != value.quantize(CENT)):
+                raise ValueError(f"{name} must be a non-negative Decimal with at most two decimals")
+        if (self.shipping_amount is not None or self.fees_amount is not None) and (not self.currency or len(self.currency) != 3):
+            raise ValueError("a three-letter currency is required with an amount")
+
+
+@dataclass(frozen=True)
 class VintedRejected:
     """An item Vinted returned without the minimum data to become a listing."""
 

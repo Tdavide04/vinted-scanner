@@ -4,8 +4,8 @@ from decimal import Decimal
 
 import pytest
 
-from vinted_scanner import InvalidQueryError, PermanentVintedError, VintedQuery, VintedScanner, normalize
-from vinted_scanner.testing import FAST, FakeTime, FakeVinted, load_fixture, response
+from vinted_scanner import InvalidQueryError, PermanentVintedError, VintedItemPricing, VintedQuery, VintedScanner, normalize, pricing
+from vinted_scanner.testing import FAST, FakeTime, FakeVinted, item_page_response, load_fixture, response, scanner_with
 
 PAGE = load_fixture("catalog_page")
 
@@ -166,3 +166,52 @@ def test_pages_end_on_the_last_page():
     last = {**PAGE, "pagination": {**PAGE["pagination"], "total_pages": 1}}
     vinted = scanner(FakeVinted([response(200, last)]))
     assert len(list(vinted.pages(VintedQuery(search_text="x"), max_pages=3))) == 1
+
+
+# --- item pricing -----------------------------------------------------------------------------
+
+def test_item_pricing_reads_the_real_item_page():
+    session = FakeVinted([], item_pages={"9000000001": item_page_response()})
+    priced = scanner_with(session).item_pricing("vinted.it", "9000000001")
+    assert priced == VintedItemPricing("known", shipping_amount=Decimal("4.99"), fees_amount=Decimal("1.35"), currency="EUR", multiple_shipping_options=True)
+    assert [call["url"] for call in session.calls] == ["https://www.vinted.it", "https://www.vinted.it/items/9000000001"]
+    assert session.calls[1]["headers"]["Accept"] == "text/html"
+
+
+def test_item_pricing_without_a_pricing_block_is_permanent():
+    session = FakeVinted([], item_pages={"1": item_page_response("<html><script>self.__next_f.push([1,\"0:{}\"])</script></html>")})
+    with pytest.raises(PermanentVintedError, match="no pricing"):
+        scanner_with(session).item_pricing("vinted.it", "1")
+
+
+def test_item_pricing_of_a_removed_item_is_a_404():
+    with pytest.raises(PermanentVintedError) as exc:
+        scanner_with(FakeVinted([])).item_pricing("vinted.it", "2")
+    assert exc.value.status == 404
+
+
+@pytest.mark.parametrize(("domain", "item_id"), [("evil.example", "1"), ("vinted.it", "1/../../x"), ("vinted.it", "")])
+def test_item_pricing_refuses_bad_input_before_any_request(domain, item_id):
+    session = FakeVinted([])
+    with pytest.raises(ValueError):
+        scanner_with(session).item_pricing(domain, item_id)
+    assert session.calls == []
+
+
+@pytest.mark.parametrize(
+    ("services", "expected"),
+    [
+        ({"isPickUpOnly": True, "buyerProtection": {"finalPrice": {"amount": "0.90", "currencyCode": "EUR"}}},
+         VintedItemPricing("pickup_only", fees_amount=Decimal("0.90"), currency="EUR")),
+        ({"shipping": {"finalPrice": {"amount": "0.00", "currencyCode": "EUR"}, "isFree": True}},
+         VintedItemPricing("known", shipping_amount=Decimal("0.00"), currency="EUR")),
+        ({"shipping": {"finalPrice": None}, "buyerProtection": {"finalPrice": {"amount": "1.20", "currencyCode": "EUR"}}},
+         VintedItemPricing("unknown", fees_amount=Decimal("1.20"), currency="EUR")),
+        ({"shipping": {"finalPrice": {"amount": "3.50", "currencyCode": "EUR"}}, "buyerProtection": {"finalPrice": {"amount": "2.00", "currencyCode": "PLN"}}},
+         VintedItemPricing("known", shipping_amount=Decimal("3.50"), currency="EUR")),
+        ({"shipping": {"finalPrice": {"amount": "n/a", "currencyCode": "EUR"}}}, VintedItemPricing("unknown")),
+        ({}, VintedItemPricing("unknown")),
+    ],
+)
+def test_pricing_never_turns_missing_shipping_into_zero(services, expected):
+    assert pricing({"services": services}) == expected

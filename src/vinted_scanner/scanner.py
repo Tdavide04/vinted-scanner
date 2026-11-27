@@ -4,6 +4,7 @@ Parts of the parameter handling and of the filter discovery are ported from Vint
 (GPL-3.0-only), as marked below; this package is therefore GPL-3.0-only too (see the README). Access is
 read-only and goes through the rate-limited client: one anonymous session, no login, no CAPTCHA handling.
 """
+import json
 import re
 import unicodedata
 from collections.abc import Callable, Iterator
@@ -15,7 +16,7 @@ from urllib.parse import urljoin
 from vinted_scanner.config import DEFAULT_CONFIG, VintedScannerConfig
 from vinted_scanner.errors import PermanentVintedError
 from vinted_scanner.http import RateLimitedHttp
-from vinted_scanner.models import VintedListing, VintedPage, VintedRejected
+from vinted_scanner.models import VintedItemPricing, VintedListing, VintedPage, VintedRejected
 from vinted_scanner.query import DOMAIN, VintedQuery, validate_params
 
 LOCALES = {"vinted.it": "it-IT", "vinted.fr": "fr-FR", "vinted.es": "es-ES", "vinted.de": "de-DE"}
@@ -37,6 +38,9 @@ CONDITION_LABEL = re.compile(r"Condizioni:\s*([^,]+)")
 CATALOG_CACHE_SECONDS = 3600
 DISCOVERY_LIMIT = 50
 NOT_DISCOVERABLE = {"price", "catalog"}  # price has its own fields; catalog is chosen from the tree
+# the item page is a Next.js app: its data arrives as JSON string literals pushed to this array
+NEXT_PUSH = "self.__next_f.push([1,"
+PRICING_KEY = '"pricingServices":'
 
 
 class VintedScanner:
@@ -127,6 +131,25 @@ class VintedScanner:
                     listings.append(listing)
         return listings
 
+    # --- item details --------------------------------------------------------------------------
+
+    def item_pricing(self, domain: str, external_id: str) -> VintedItemPricing:
+        """Shipping and buyer protection of one item, from its public page (the catalogue list has no shipping).
+
+        One page request through the same paced client. PermanentVintedError when the item is gone (status 404)
+        or the page carries no pricing block (Vinted changed it).
+        """
+        _require_vinted_domain(domain)
+        if not isinstance(external_id, str) or not external_id.isdigit():
+            raise ValueError(f"not a Vinted item id: {external_id!r}")
+        if self._session_domain != domain:
+            self._start_session(domain)
+        page = self._http.get(f"https://www.{domain}/items/{external_id}", headers=self._page_headers())
+        services = _pricing_services(page.text)
+        if services is None:
+            raise PermanentVintedError("vinted: no pricing on the item page (the page may have changed)")
+        return pricing(services)
+
     # --- filter discovery ----------------------------------------------------------------------
 
     def search_catalogs(self, domain: str, text: str) -> list[dict[str, str]]:
@@ -190,8 +213,11 @@ class VintedScanner:
     def _start_session(self, domain: str) -> None:
         _require_vinted_domain(domain)
         # the home page sets the anonymous session cookies; they hold tokens, so they are never logged
-        self._http.get(f"https://www.{domain}", headers={"User-Agent": USER_AGENT, "Accept": "text/html", "Accept-Language": "it-IT,it;q=0.8,en;q=0.5"})
+        self._http.get(f"https://www.{domain}", headers=self._page_headers())
         self._session_domain = domain
+
+    def _page_headers(self) -> dict[str, str]:
+        return {"User-Agent": USER_AGENT, "Accept": "text/html", "Accept-Language": "it-IT,it;q=0.8,en;q=0.5"}
 
     def _api_headers(self, domain: str) -> dict[str, str]:
         headers = {
@@ -258,6 +284,60 @@ def _money(value: Any) -> tuple[Decimal, str] | None:
     if not isinstance(value, dict) or value.get("amount") in (None, "") or not value.get("currency_code"):
         return None
     return Decimal(str(value["amount"])).quantize(Decimal("0.01")), str(value["currency_code"])
+
+
+def _pricing_services(html: str) -> dict[str, Any] | None:
+    """The `pricingServices` object of an item page: each Next.js push is decoded as the JSON string it is, then the
+    object is decoded from the text it carries. None when no push holds one."""
+    decoder = json.JSONDecoder()
+    start = 0
+    while (at := html.find(NEXT_PUSH, start)) != -1:
+        start = at + len(NEXT_PUSH)
+        try:
+            chunk, _ = decoder.raw_decode(html, start)
+            key = chunk.find(PRICING_KEY) if isinstance(chunk, str) else -1
+            if key == -1:
+                continue
+            services, _ = decoder.raw_decode(chunk, key + len(PRICING_KEY))
+        except ValueError:
+            continue
+        if isinstance(services, dict):
+            return services
+    return None
+
+
+def _object(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _camel_money(value: Any) -> tuple[Decimal, str] | None:
+    if not isinstance(value, dict) or value.get("amount") in (None, "") or not value.get("currencyCode"):
+        return None
+    return Decimal(str(value["amount"])).quantize(Decimal("0.01")), str(value["currencyCode"])
+
+
+def pricing(pricing_services: dict[str, Any]) -> VintedItemPricing:
+    """An item page's `pricingServices` object → VintedItemPricing. A missing or unreadable shipping price stays
+    unknown, never zero; a fee in another currency than the shipping is dropped."""
+    services = _object(pricing_services.get("services"))
+    protection = _object(services.get("buyerProtection"))
+    shipping = _object(services.get("shipping"))
+    try:
+        fee = _camel_money(protection.get("finalPrice"))
+        delivery = _camel_money(shipping.get("finalPrice"))
+    except InvalidOperation:
+        fee = delivery = None
+    if services.get("isPickUpOnly") is True:
+        return VintedItemPricing("pickup_only", fees_amount=fee[0] if fee else None, currency=fee[1] if fee else None)
+    if delivery is None:
+        return VintedItemPricing("unknown", fees_amount=fee[0] if fee else None, currency=fee[1] if fee else None)
+    return VintedItemPricing(
+        "known",
+        shipping_amount=delivery[0],
+        fees_amount=fee[0] if fee and fee[1] == delivery[1] else None,
+        currency=delivery[1],
+        multiple_shipping_options=shipping.get("areMultipleShippingOptionsAvailable") is True,
+    )
 
 
 def normalize(raw: Any, domain: str) -> VintedListing:
